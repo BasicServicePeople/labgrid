@@ -545,8 +545,27 @@ class ProviderGenericExport(ResourceExport):
         }
 
 exports["TFTPProvider"] = ProviderGenericExport
-exports["NFSProvider"] = ProviderGenericExport
 exports["HTTPProvider"] = ProviderGenericExport
+
+@attr.s(eq=False)
+class NFSProviderExport(ResourceExport):
+    """ResourceExport for NFSProvider"""
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        local_cls_name = self.cls
+        self.data['cls'] = f"Remote{self.cls}"
+        from ..resource import provider
+        local_cls = getattr(provider, local_cls_name)
+        self.local = local_cls(target=None, name=None, **self.local_params)
+
+    def _get_params(self):
+        """Helper function to return parameters"""
+        return {
+            'host': self.host,
+        }
+
+exports["NFSProvider"] = NFSProviderExport
 
 @attr.s
 class EthernetPortExport(ResourceExport):
